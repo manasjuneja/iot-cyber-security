@@ -102,11 +102,24 @@ log = logging.getLogger(__name__)
 
 def load_stratified(data_dir: Path, max_per_class: int) -> pd.DataFrame:
     """
-    Stream every CSV in chunks; collect up to max_per_class rows per label.
-    This keeps memory usage predictable regardless of total dataset size.
+    Stream every CSV; collect up to max_per_class rows per label.
+    Result is cached as a compressed .npz so subsequent runs load in seconds.
+    Delete the cache file to force a fresh scan.
     """
+    cache_path = data_dir / f".cache_all_{max_per_class}_s{SEED}.npz"
+
+    if cache_path.exists():
+        log.info(f"Loading from cache: {cache_path}")
+        raw   = np.load(cache_path, allow_pickle=True)
+        X     = raw["X"]
+        lbls  = raw["labels"].astype(str)
+        df    = pd.DataFrame(X, columns=FEATURE_COLS)
+        df[LABEL_COL] = lbls
+        log.info(f"Cache loaded: {len(df):,} rows, {df[LABEL_COL].nunique()} classes")
+        return df
+
     csv_files = sorted(data_dir.glob("*.csv"))
-    log.info(f"Found {len(csv_files)} CSV files in {data_dir}")
+    log.info(f"Found {len(csv_files)} CSV files in {data_dir} — building cache …")
 
     buckets: dict[str, list[pd.DataFrame]] = {}
 
@@ -144,6 +157,13 @@ def load_stratified(data_dir: Path, max_per_class: int) -> pd.DataFrame:
     combined = pd.concat(parts, ignore_index=True)
     combined = combined.sample(frac=1.0, random_state=SEED).reset_index(drop=True)
     log.info(f"\nTotal rows loaded: {len(combined):,}")
+
+    np.savez_compressed(
+        cache_path,
+        X=combined[FEATURE_COLS].values.astype(np.float32),
+        labels=combined[LABEL_COL].values.astype(str),
+    )
+    log.info(f"Cache saved → {cache_path}")
     return combined
 
 

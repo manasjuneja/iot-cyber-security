@@ -363,7 +363,7 @@ def plot_tsne(
     kinds  = np.array(kinds)
 
     log.info(f"Running t-SNE on {len(X_all)} points …")
-    tsne  = TSNE(n_components=2, perplexity=30, random_state=42, n_iter=500)
+    tsne  = TSNE(n_components=2, perplexity=30, random_state=42, max_iter=500)
     X_2d  = tsne.fit_transform(X_all)
 
     palette = plt.cm.tab10.colors

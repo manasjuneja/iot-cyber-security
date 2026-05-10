@@ -407,33 +407,48 @@ def main():
 
     SEED = 42
     MAX_PER_CLASS = 10_000   # lighter load for evaluation only
+    cache_path = data_dir / f".cache_all_{MAX_PER_CLASS}_s{SEED}.npz"
 
-    csv_files = sorted(data_dir.glob("*.csv"))
-    buckets: dict[str, list] = {}
-    for fpath in csv_files:
-        try:
-            chunk = pd.read_csv(fpath, low_memory=False)
-        except Exception:
-            continue
-        needed = FEATURE_COLS + ["Label"]
-        if any(c not in chunk.columns for c in needed):
-            continue
-        chunk = chunk[needed].replace([float("inf"), float("-inf")], float("nan")).dropna(subset=FEATURE_COLS)
-        for label, grp in chunk.groupby("Label", sort=False):
-            if label not in buckets:
-                buckets[label] = []
-            already = sum(len(d) for d in buckets[label])
-            remaining = MAX_PER_CLASS - already
-            if remaining <= 0:
+    if cache_path.exists():
+        log.info(f"Loading from cache: {cache_path}")
+        raw  = np.load(cache_path, allow_pickle=True)
+        X_all = raw["X"]
+        le = LabelEncoder()
+        le.classes_ = raw["labels"].astype(str)
+        y_all = le.transform(raw["labels"].astype(str))
+        loco_classes = le.classes_
+        log.info(f"Cache loaded: {len(X_all):,} rows")
+    else:
+        csv_files = sorted(data_dir.glob("*.csv"))
+        log.info(f"Scanning {len(csv_files)} CSV files — will cache result …")
+        buckets: dict[str, list] = {}
+        for fpath in csv_files:
+            try:
+                chunk = pd.read_csv(fpath, low_memory=False)
+            except Exception:
                 continue
-            buckets[label].append(grp.iloc[:remaining])
+            needed = FEATURE_COLS + ["Label"]
+            if any(c not in chunk.columns for c in needed):
+                continue
+            chunk = chunk[needed].replace([float("inf"), float("-inf")], float("nan")).dropna(subset=FEATURE_COLS)
+            for label, grp in chunk.groupby("Label", sort=False):
+                if label not in buckets:
+                    buckets[label] = []
+                already = sum(len(d) for d in buckets[label])
+                remaining = MAX_PER_CLASS - already
+                if remaining <= 0:
+                    continue
+                buckets[label].append(grp.iloc[:remaining])
 
-    parts = [pd.concat(v, ignore_index=True) for v in buckets.values()]
-    df    = pd.concat(parts, ignore_index=True).sample(frac=1.0, random_state=SEED)
-    le    = LabelEncoder()
-    y_all = le.fit_transform(df["Label"].values)
-    X_all = df[FEATURE_COLS].values.astype(np.float32)
-    loco_classes = le.classes_
+        parts = [pd.concat(v, ignore_index=True) for v in buckets.values()]
+        df    = pd.concat(parts, ignore_index=True).sample(frac=1.0, random_state=SEED)
+        le    = LabelEncoder()
+        y_all = le.fit_transform(df["Label"].values)
+        X_all = df[FEATURE_COLS].values.astype(np.float32)
+        loco_classes = le.classes_
+        np.savez_compressed(cache_path,
+                            X=X_all, labels=df["Label"].values.astype(str))
+        log.info(f"Cache saved → {cache_path}")
 
     loco_evaluation(pipeline, X_all, y_all, loco_classes, OUTPUT_DIR)
 

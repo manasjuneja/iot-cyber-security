@@ -103,10 +103,21 @@ log = logging.getLogger(__name__)
 #  DATA
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def load_attack_data(data_dir: Path, max_per_class: int):
-    """Load stratified sample as numpy arrays, never materialising the full DataFrame."""
+def load_attack_data(data_dir: Path, max_per_class: int):  # noqa: C901
+    """Load stratified attack-only sample. Caches to .npz after the first scan."""
+    cache_path = data_dir / f".cache_attacks_{max_per_class}_s{SEED}.npz"
+
+    if cache_path.exists():
+        log.info(f"Loading from cache: {cache_path}")
+        raw         = np.load(cache_path, allow_pickle=True)
+        X           = raw["X"]
+        y           = raw["y"]
+        label_names = raw["label_names"].astype(str)
+        log.info(f"Cache loaded: {len(X):,} rows, {len(label_names)} attack classes")
+        return X, y, label_names
+
     csv_files = sorted(data_dir.glob("*.csv"))
-    log.info(f"Found {len(csv_files)} CSV files")
+    log.info(f"Found {len(csv_files)} CSV files — building cache …")
 
     CHUNK_SIZE = 50_000
     needed     = FEATURE_COLS + [LABEL_COL]
@@ -169,8 +180,13 @@ def load_attack_data(data_dir: Path, max_per_class: int):
     y = np.concatenate(y_parts); del y_parts
 
     perm = np.random.RandomState(SEED).permutation(len(X))
+    X, y = X[perm], y[perm]
+    label_names = np.array(label_names)
     log.info(f"Total attack rows: {len(X):,}")
-    return X[perm], y[perm], np.array(label_names)
+
+    np.savez_compressed(cache_path, X=X, y=y, label_names=label_names)
+    log.info(f"Cache saved → {cache_path}")
+    return X, y, label_names
 
 
 class AttackDataset(Dataset):
@@ -394,7 +410,7 @@ def plot_latent_tsne(mus, labels, classes, out_dir):
     idx = rng.choice(len(mus), N, replace=False)
     log.info(f"Running t-SNE on {N} latent vectors …")
     emb = TSNE(n_components=2, random_state=SEED, perplexity=40,
-               n_iter=500, init="pca").fit_transform(mus[idx])
+               max_iter=500, init="pca").fit_transform(mus[idx])
 
     fig, ax = plt.subplots(figsize=(13, 9))
     cmap = plt.get_cmap("tab20", len(classes))

@@ -10,6 +10,7 @@ Training data: ALL known classes (benign + attacks).
 At inference time, reconstruction error > threshold → unknown / novel attack.
 """
 
+import argparse
 import os
 import sys
 import time
@@ -100,8 +101,19 @@ log = logging.getLogger(__name__)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def load_stratified(data_dir: Path, max_per_class: int) -> pd.DataFrame:
+    """Same stratified loader as train.py — shares the same on-disk cache."""
+    cache_path = data_dir / f".cache_all_{max_per_class}_s{SEED}.npz"
+
+    if cache_path.exists():
+        log.info(f"Loading from cache: {cache_path}")
+        raw  = np.load(cache_path, allow_pickle=True)
+        df   = pd.DataFrame(raw["X"], columns=FEATURE_COLS)
+        df[LABEL_COL] = raw["labels"].astype(str)
+        log.info(f"Cache loaded: {len(df):,} rows, {df[LABEL_COL].nunique()} classes")
+        return df
+
     csv_files = sorted(data_dir.glob("*.csv"))
-    log.info(f"Found {len(csv_files)} CSV files in {data_dir}")
+    log.info(f"Found {len(csv_files)} CSV files in {data_dir} — building cache …")
 
     buckets: dict[str, list[pd.DataFrame]] = {}
 
@@ -139,6 +151,13 @@ def load_stratified(data_dir: Path, max_per_class: int) -> pd.DataFrame:
     combined = pd.concat(parts, ignore_index=True)
     combined = combined.sample(frac=1.0, random_state=SEED).reset_index(drop=True)
     log.info(f"\nTotal rows loaded: {len(combined):,}")
+
+    np.savez_compressed(
+        cache_path,
+        X=combined[FEATURE_COLS].values.astype(np.float32),
+        labels=combined[LABEL_COL].values.astype(str),
+    )
+    log.info(f"Cache saved → {cache_path}")
     return combined
 
 
@@ -450,7 +469,7 @@ def plot_latent_tsne(latents: np.ndarray, labels: np.ndarray,
     idx = rng.choice(len(latents), N, replace=False)
     log.info(f"Running t-SNE on {N} latent vectors …")
     emb = TSNE(n_components=2, random_state=SEED, perplexity=40,
-               n_iter=500, init="pca").fit_transform(latents[idx])
+               max_iter=500, init="pca").fit_transform(latents[idx])
 
     fig, ax = plt.subplots(figsize=(13, 9))
     cmap = plt.get_cmap("tab20", len(classes))
@@ -503,7 +522,23 @@ def plot_per_class_errors(errors: np.ndarray, labels: np.ndarray,
 #  MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def _restore_scaler(center: np.ndarray, scale: np.ndarray) -> RobustScaler:
+    """Rebuild a RobustScaler from saved center/scale without refitting."""
+    scaler = RobustScaler()
+    scaler.center_ = center
+    scaler.scale_  = scale
+    scaler.n_features_in_ = len(center)
+    return scaler
+
+
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--resume", metavar="CKPT",
+        help="Path to ae_model.pt — skip training and go straight to t-SNE plot.",
+    )
+    args = parser.parse_args()
+
     log.info("=" * 70)
     log.info("CICIoT2023 — Autoencoder Anomaly Detector Training")
     log.info(f"Device  : {DEVICE}  |  AMP: {USE_AMP}")
@@ -514,6 +549,59 @@ def main():
 
     # ── 1. Load & preprocess ──────────────────────────────────────────────────
     df = load_stratified(DATA_DIR, MAX_SAMPLES_PER_CLASS)
+
+    if args.resume:
+        # Restore scaler from checkpoint so the split uses identical scaling
+        ckpt = torch.load(args.resume, map_location="cpu", weights_only=False)
+        log.info(f"Loaded checkpoint from {args.resume}")
+        scaler  = _restore_scaler(ckpt["scaler_mean"], ckpt["scaler_scale"])
+        classes = ckpt["classes"]
+        cfg     = ckpt["config"]
+
+        # Recreate LabelEncoder with saved class order
+        le = LabelEncoder()
+        le.classes_ = classes
+
+        df = df.replace([np.inf, -np.inf], np.nan).dropna(subset=FEATURE_COLS)
+        X  = df[FEATURE_COLS].values.astype(np.float32)
+        y  = le.transform(df[LABEL_COL].values)
+
+        _, X_tmp, _, y_tmp = train_test_split(
+            X, y, test_size=0.30, stratify=y, random_state=SEED
+        )
+        X_val, X_te, y_val, y_te = train_test_split(
+            X_tmp, y_tmp, test_size=0.50, stratify=y_tmp, random_state=SEED
+        )
+        clip  = 20.0
+        X_val = np.clip(scaler.transform(X_val).astype(np.float32), -clip, clip)
+        X_te  = np.clip(scaler.transform(X_te).astype(np.float32),  -clip, clip)
+        del df
+
+        n_features = X_val.shape[1]
+        nw  = min(4, os.cpu_count() or 1)
+        kw  = dict(pin_memory=USE_AMP, num_workers=nw, persistent_workers=(nw > 0))
+        val_loader  = DataLoader(FeatureDataset(X_val, y_val),
+                                 batch_size=BATCH_SIZE * 2, shuffle=False, **kw)
+
+        model = Autoencoder(
+            in_dim=n_features,
+            hidden_dims=cfg["hidden_dims"],
+            latent_dim=cfg["latent_dim"],
+            dropout=cfg["dropout"],
+        ).to(DEVICE)
+        model.load_state_dict(ckpt["model_state"])
+        model.eval()
+        log.info("Model weights restored — skipping training.")
+
+        log.info("Generating latent space visualisation …")
+        latents, lat_labels = collect_latents(model, val_loader)
+        plot_latent_tsne(latents, lat_labels, classes, OUTPUT_DIR)
+
+        log.info(f"\nAll outputs written to: {OUTPUT_DIR.resolve()}")
+        log.info("Done.")
+        return
+
+    # ── Full training path ────────────────────────────────────────────────────
     prep = Preprocessor()
     X_tr, X_val, X_te, y_tr, y_val, y_te = prep.fit_transform(df)
     classes = prep.classes_
@@ -594,7 +682,6 @@ def main():
     val_errors, val_labels = compute_errors(model, val_loader)
     threshold = calibrate_threshold(val_errors, THRESHOLD_PERCENTILE)
 
-    # Quick sanity check: what fraction of val set is flagged as anomalous?
     flagged_pct = 100.0 * (val_errors > threshold).mean()
     log.info(f"Val set flagged as anomalous: {flagged_pct:.2f}%  "
              f"(expected ~{100 - THRESHOLD_PERCENTILE:.1f}%)")

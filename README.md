@@ -70,6 +70,9 @@ Final decoder layer: plain Linear (no activation — output lives in unbounded s
 # Train the autoencoder
 python ae_train.py
 
+# Resume from a saved checkpoint — skips training, runs only the remaining plots
+python ae_train.py --resume outputs/ae_model.pt
+
 # Run the two-stage pipeline (requires ae_model.pt + best_model.pt)
 python ae_detect.py
 ```
@@ -158,12 +161,83 @@ Network flow statistics used by all three models:
 
 ---
 
+## Results — Model 1 (Deep Residual MLP)
+
+Trained on 901,899 samples (50k/class stratified cap, 70/15/15 split), evaluated on 193,265 test samples.
+
+| Metric | Score |
+|--------|-------|
+| Accuracy | 67.21 % |
+| Balanced Accuracy | 60.10 % |
+| F1 Macro | 0.5674 |
+| F1 Weighted | 0.6702 |
+
+**Near-perfect classes (F1 ≥ 0.99):** DDOS-ICMP_FLOOD, DDOS-PSHACK_FLOOD, DDOS-RSTFINFLOOD, DDOS-ACK_FRAGMENTATION, DDOS-ICMP_FRAGMENTATION, DDOS-UDP_FRAGMENTATION, MIRAI-UDPPLAIN
+
+**Good (F1 ≥ 0.70):** DOS-HTTP_FLOOD (0.88), DDOS-SLOWLORIS (0.93), DDOS-HTTP_FLOOD (0.80), DNS_SPOOFING (0.72), MIRAI-GREETH_FLOOD (0.71)
+
+**Hard minority classes (F1 < 0.15):** BACKDOOR_MALWARE, UPLOADING_ATTACK, RECON-PINGSWEEP, XSS, SQLINJECTION — very few real-world samples; use VAE-generated data to augment.
+
+Full per-class breakdown: `outputs/classification_report.txt`
+
+---
+
+## Data Cache
+
+All scripts cache the stratified sample to a compressed `.npz` file inside `MERGED_CSV/` on the first run. Subsequent runs skip the 4-minute CSV scan and load in seconds.
+
+| Cache file | Used by | Load time (after first run) |
+|---|---|---|
+| `MERGED_CSV/.cache_all_50000_s42.npz` | `train.py`, `ae_train.py` | ~3 s |
+| `MERGED_CSV/.cache_all_10000_s42.npz` | `ae_detect.py` | ~1 s |
+| `MERGED_CSV/.cache_attacks_50000_s42.npz` | `vae_train.py` | ~2 s |
+
+The filename encodes the per-class cap and seed, so changing either constant automatically triggers a fresh scan. To force a rebuild manually:
+
+```bash
+rm MERGED_CSV/.cache_*.npz
+```
+
+---
+
+## Runtime Estimates (NVIDIA GTX 1650, 4 GB VRAM)
+
+| Step | First run | Subsequent runs |
+|------|-----------|-----------------|
+| Data loading | ~4 min | ~3 s (cache) |
+| `train.py` training | ~55 min (50 epochs) | — |
+| `ae_train.py` training | ~30 min | — |
+| `ae_train.py --resume` | ~4 min (data only) | ~3 min (cache + inference) |
+| `ae_detect.py` LOCO eval | ~10 min | ~8 min (cache) |
+| `vae_train.py` training | ~40 min | — |
+| `vae_generate.py` | ~2 min | ~2 min |
+
+---
+
+## Known Issues Fixed
+
+| Script | Issue | Fix |
+|--------|-------|-----|
+| All | `TSNE.__init__() got unexpected argument 'n_iter'` | Renamed to `max_iter` in scikit-learn ≥ 1.4; fixed in `vae_train.py`, `ae_train.py`, `vae_generate.py` |
+| `train.py`, `ae_train.py` | `tr_loss=nan` throughout training | Two causes: (1) custom `FocalLoss` received float16 logits from AMP — fixed by casting `logits.float()` inside loss and computing loss outside `autocast`; (2) `IAT` feature has IQR ≈ 6×10⁻⁵ so `RobustScaler` produces values up to 163M which overflow float16 — fixed by `np.clip(X, -20, 20)` after scaling |
+
+---
+
 ## Setup
 
 ```bash
 python -m venv venv
-source venv/bin/activate
-pip install -r requirents.txt
+source venv/bin/activate    # Linux/macOS
+# venv\Scripts\activate     # Windows
+
+# CPU-only
+pip install torch pandas numpy scikit-learn matplotlib seaborn tqdm
+
+# GPU (CUDA 12.8 — adjust cu128 to match your driver)
+pip install torch --index-url https://download.pytorch.org/whl/cu128
+pip install pandas numpy scikit-learn matplotlib seaborn tqdm
 ```
 
-GPU with CUDA 12 is recommended. All models fall back to CPU automatically.
+Tested with: Python 3.14.4, PyTorch 2.11.0+cu128, scikit-learn 1.8.0, pandas 3.0.2, numpy 2.4.4.
+
+GPU with CUDA 12+ is recommended. All models fall back to CPU automatically (slower).

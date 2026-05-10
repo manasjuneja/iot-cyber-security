@@ -1,0 +1,159 @@
+2026-05-10 08:00:59,874  INFO      ======================================================================
+2026-05-10 08:00:59,874  INFO      CICIoT2023 — CVAE Generation + Validation
+2026-05-10 08:00:59,874  INFO      Device      : cuda
+2026-05-10 08:00:59,874  INFO      VAE ckpt    : /home/namit/codes/iot-cyber-security/outputs/best_vae.pt
+2026-05-10 08:00:59,874  INFO      MLP ckpt    : /home/namit/codes/iot-cyber-security/outputs/best_model.pt
+2026-05-10 08:00:59,874  INFO      N per class : 2000
+2026-05-10 08:00:59,874  INFO      ======================================================================
+2026-05-10 08:01:00,228  INFO      CVAE loaded  — 34 attack classes
+2026-05-10 08:01:00,304  INFO      MLP loaded   — 34 classes  |  34 attack class mappings
+2026-05-10 08:01:00,305  INFO      Generating for 34 attack class(es)
+2026-05-10 08:01:00,305  INFO      [BACKDOOR_MALWARE]  VAE idx=0  MLP idx=0
+2026-05-10 08:01:01,090  INFO        → 413 accepted  acceptance=2.0%
+2026-05-10 08:01:01,130  INFO        → Saved BACKDOOR_MALWARE.csv
+2026-05-10 08:01:01,130  INFO      [BENIGN]  VAE idx=1  MLP idx=1
+2026-05-10 08:01:01,181  INFO        → 2,000 accepted  acceptance=19.5%
+2026-05-10 08:01:01,278  INFO        → Saved BENIGN.csv
+2026-05-10 08:01:01,278  INFO      [BROWSERHIJACKING]  VAE idx=2  MLP idx=2
+2026-05-10 08:01:01,329  INFO        → 2,000 accepted  acceptance=19.5%
+2026-05-10 08:01:01,427  INFO        → Saved BROWSERHIJACKING.csv
+2026-05-10 08:01:01,427  INFO      [COMMANDINJECTION]  VAE idx=3  MLP idx=3
+2026-05-10 08:01:01,508  INFO        → 2,000 accepted  acceptance=12.2%
+2026-05-10 08:01:01,603  INFO        → Saved COMMANDINJECTION.csv
+2026-05-10 08:01:01,603  INFO      [DDOS-ACK_FRAGMENTATION]  VAE idx=4  MLP idx=4
+2026-05-10 08:01:01,615  INFO        → 2,000 accepted  acceptance=97.7%
+2026-05-10 08:01:01,711  INFO        → Saved DDOS-ACK_FRAGMENTATION.csv
+2026-05-10 08:01:01,712  INFO      [DDOS-HTTP_FLOOD]  VAE idx=5  MLP idx=5
+2026-05-10 08:01:01,733  INFO        → 2,000 accepted  acceptance=48.8%
+2026-05-10 08:01:01,828  INFO        → Saved DDOS-HTTP_FLOOD.csv
+2026-05-10 08:01:01,828  INFO      [DDOS-ICMP_FLOOD]  VAE idx=6  MLP idx=6
+2026-05-10 08:01:01,840  INFO        → 2,000 accepted  acceptance=97.7%
+2026-05-10 08:01:01,936  INFO        → Saved DDOS-ICMP_FLOOD.csv
+2026-05-10 08:01:01,937  INFO      [DDOS-ICMP_FRAGMENTATION]  VAE idx=7  MLP idx=7
+2026-05-10 08:01:01,948  INFO        → 2,000 accepted  acceptance=97.7%
+2026-05-10 08:01:02,049  INFO        → Saved DDOS-ICMP_FRAGMENTATION.csv
+2026-05-10 08:01:02,049  INFO      [DDOS-PSHACK_FLOOD]  VAE idx=8  MLP idx=8
+2026-05-10 08:01:02,061  INFO        → 2,000 accepted  acceptance=97.7%
+2026-05-10 08:01:02,163  INFO        → Saved DDOS-PSHACK_FLOOD.csv
+2026-05-10 08:01:02,163  INFO      [DDOS-RSTFINFLOOD]  VAE idx=9  MLP idx=9
+2026-05-10 08:01:02,175  INFO        → 2,000 accepted  acceptance=97.7%
+2026-05-10 08:01:02,268  INFO        → Saved DDOS-RSTFINFLOOD.csv
+2026-05-10 08:01:02,268  INFO      [DDOS-SLOWLORIS]  VAE idx=10  MLP idx=10
+2026-05-10 08:01:02,290  INFO        → 2,000 accepted  acceptance=48.8%
+2026-05-10 08:01:02,382  INFO        → Saved DDOS-SLOWLORIS.csv
+2026-05-10 08:01:02,383  INFO      [DDOS-SYNONYMOUSIP_FLOOD]  VAE idx=11  MLP idx=11
+2026-05-10 08:01:02,414  INFO        → 2,000 accepted  acceptance=32.6%
+2026-05-10 08:01:02,509  INFO        → Saved DDOS-SYNONYMOUSIP_FLOOD.csv
+2026-05-10 08:01:02,510  INFO      [DDOS-SYN_FLOOD]  VAE idx=12  MLP idx=12
+2026-05-10 08:01:02,610  INFO        → 1,964 accepted  acceptance=9.6%
+2026-05-10 08:01:02,703  INFO        → Saved DDOS-SYN_FLOOD.csv
+2026-05-10 08:01:02,703  INFO      [DDOS-TCP_FLOOD]  VAE idx=13  MLP idx=13
+2026-05-10 08:01:02,725  INFO        → 2,000 accepted  acceptance=48.8%
+2026-05-10 08:01:02,818  INFO        → Saved DDOS-TCP_FLOOD.csv
+2026-05-10 08:01:02,818  INFO      [DDOS-UDP_FLOOD]  VAE idx=14  MLP idx=14
+2026-05-10 08:01:02,840  INFO        → 2,000 accepted  acceptance=48.8%
+2026-05-10 08:01:02,934  INFO        → Saved DDOS-UDP_FLOOD.csv
+2026-05-10 08:01:02,934  INFO      [DDOS-UDP_FRAGMENTATION]  VAE idx=15  MLP idx=15
+2026-05-10 08:01:02,946  INFO        → 2,000 accepted  acceptance=97.7%
+2026-05-10 08:01:03,042  INFO        → Saved DDOS-UDP_FRAGMENTATION.csv
+2026-05-10 08:01:03,042  INFO      [DICTIONARYBRUTEFORCE]  VAE idx=16  MLP idx=16
+2026-05-10 08:01:03,073  INFO        → 2,000 accepted  acceptance=32.6%
+2026-05-10 08:01:03,169  INFO        → Saved DICTIONARYBRUTEFORCE.csv
+2026-05-10 08:01:03,169  INFO      [DNS_SPOOFING]  VAE idx=17  MLP idx=17
+2026-05-10 08:01:03,190  INFO        → 2,000 accepted  acceptance=48.8%
+2026-05-10 08:01:03,283  INFO        → Saved DNS_SPOOFING.csv
+2026-05-10 08:01:03,283  INFO      [DOS-HTTP_FLOOD]  VAE idx=18  MLP idx=18
+2026-05-10 08:01:03,304  INFO        → 2,000 accepted  acceptance=48.8%
+2026-05-10 08:01:03,402  INFO        → Saved DOS-HTTP_FLOOD.csv
+2026-05-10 08:01:03,402  INFO      [DOS-SYN_FLOOD]  VAE idx=19  MLP idx=19
+2026-05-10 08:01:03,423  INFO        → 2,000 accepted  acceptance=48.8%
+2026-05-10 08:01:03,531  INFO        → Saved DOS-SYN_FLOOD.csv
+2026-05-10 08:01:03,532  INFO      [DOS-TCP_FLOOD]  VAE idx=20  MLP idx=20
+2026-05-10 08:01:03,553  INFO        → 2,000 accepted  acceptance=48.8%
+2026-05-10 08:01:03,660  INFO        → Saved DOS-TCP_FLOOD.csv
+2026-05-10 08:01:03,660  INFO      [DOS-UDP_FLOOD]  VAE idx=21  MLP idx=21
+2026-05-10 08:01:03,681  INFO        → 2,000 accepted  acceptance=48.8%
+2026-05-10 08:01:03,800  INFO        → Saved DOS-UDP_FLOOD.csv
+2026-05-10 08:01:03,801  INFO      [MIRAI-GREETH_FLOOD]  VAE idx=22  MLP idx=22
+2026-05-10 08:01:03,823  INFO        → 2,000 accepted  acceptance=48.8%
+2026-05-10 08:01:03,926  INFO        → Saved MIRAI-GREETH_FLOOD.csv
+2026-05-10 08:01:03,926  INFO      [MIRAI-GREIP_FLOOD]  VAE idx=23  MLP idx=23
+2026-05-10 08:01:03,957  INFO        → 2,000 accepted  acceptance=32.6%
+2026-05-10 08:01:04,054  INFO        → Saved MIRAI-GREIP_FLOOD.csv
+2026-05-10 08:01:04,054  INFO      [MIRAI-UDPPLAIN]  VAE idx=24  MLP idx=24
+2026-05-10 08:01:04,066  INFO        → 2,000 accepted  acceptance=97.7%
+2026-05-10 08:01:04,162  INFO        → Saved MIRAI-UDPPLAIN.csv
+2026-05-10 08:01:04,162  INFO      [MITM-ARPSPOOFING]  VAE idx=25  MLP idx=25
+2026-05-10 08:01:04,214  INFO        → 2,000 accepted  acceptance=19.5%
+2026-05-10 08:01:04,308  INFO        → Saved MITM-ARPSPOOFING.csv
+2026-05-10 08:01:04,309  INFO      [RECON-HOSTDISCOVERY]  VAE idx=26  MLP idx=26
+2026-05-10 08:01:04,370  INFO        → 2,000 accepted  acceptance=16.3%
+2026-05-10 08:01:04,468  INFO        → Saved RECON-HOSTDISCOVERY.csv
+2026-05-10 08:01:04,468  INFO      [RECON-OSSCAN]  VAE idx=27  MLP idx=27
+2026-05-10 08:01:04,516  INFO        → 2,000 accepted  acceptance=24.4%
+2026-05-10 08:01:04,612  INFO        → Saved RECON-OSSCAN.csv
+2026-05-10 08:01:04,612  INFO      [RECON-PINGSWEEP]  VAE idx=28  MLP idx=28
+2026-05-10 08:01:04,725  INFO        → 429 accepted  acceptance=2.1%
+2026-05-10 08:01:04,749  INFO        → Saved RECON-PINGSWEEP.csv
+2026-05-10 08:01:04,750  INFO      [RECON-PORTSCAN]  VAE idx=29  MLP idx=29
+2026-05-10 08:01:04,855  INFO        → 815 accepted  acceptance=4.0%
+2026-05-10 08:01:04,897  INFO        → Saved RECON-PORTSCAN.csv
+2026-05-10 08:01:04,897  INFO      [SQLINJECTION]  VAE idx=30  MLP idx=30
+2026-05-10 08:01:04,948  INFO        → 2,000 accepted  acceptance=19.5%
+2026-05-10 08:01:05,042  INFO        → Saved SQLINJECTION.csv
+2026-05-10 08:01:05,042  INFO      [UPLOADING_ATTACK]  VAE idx=31  MLP idx=31
+2026-05-10 08:01:05,141  INFO        → 4 accepted  acceptance=0.0%
+2026-05-10 08:01:05,143  INFO        → Saved UPLOADING_ATTACK.csv
+2026-05-10 08:01:05,144  INFO      [VULNERABILITYSCAN]  VAE idx=32  MLP idx=32
+2026-05-10 08:01:05,185  INFO        → 2,000 accepted  acceptance=24.4%
+2026-05-10 08:01:05,279  INFO        → Saved VULNERABILITYSCAN.csv
+2026-05-10 08:01:05,279  INFO      [XSS]  VAE idx=33  MLP idx=33
+2026-05-10 08:01:05,380  INFO        → 1,109 accepted  acceptance=5.4%
+2026-05-10 08:01:05,435  INFO        → Saved XSS.csv
+2026-05-10 08:01:05,435  INFO      
+============================================================
+2026-05-10 08:01:05,435  INFO      Class                                    Accepted      Rate
+2026-05-10 08:01:05,435  INFO      ------------------------------------------------------------
+2026-05-10 08:01:05,435  INFO      BACKDOOR_MALWARE                              413      2.0%
+2026-05-10 08:01:05,435  INFO      BENIGN                                      2,000     19.5%
+2026-05-10 08:01:05,436  INFO      BROWSERHIJACKING                            2,000     19.5%
+2026-05-10 08:01:05,436  INFO      COMMANDINJECTION                            2,000     12.2%
+2026-05-10 08:01:05,436  INFO      DDOS-ACK_FRAGMENTATION                      2,000     97.7%
+2026-05-10 08:01:05,436  INFO      DDOS-HTTP_FLOOD                             2,000     48.8%
+2026-05-10 08:01:05,436  INFO      DDOS-ICMP_FLOOD                             2,000     97.7%
+2026-05-10 08:01:05,436  INFO      DDOS-ICMP_FRAGMENTATION                     2,000     97.7%
+2026-05-10 08:01:05,436  INFO      DDOS-PSHACK_FLOOD                           2,000     97.7%
+2026-05-10 08:01:05,436  INFO      DDOS-RSTFINFLOOD                            2,000     97.7%
+2026-05-10 08:01:05,436  INFO      DDOS-SLOWLORIS                              2,000     48.8%
+2026-05-10 08:01:05,436  INFO      DDOS-SYNONYMOUSIP_FLOOD                     2,000     32.6%
+2026-05-10 08:01:05,436  INFO      DDOS-SYN_FLOOD                              1,964      9.6%
+2026-05-10 08:01:05,436  INFO      DDOS-TCP_FLOOD                              2,000     48.8%
+2026-05-10 08:01:05,436  INFO      DDOS-UDP_FLOOD                              2,000     48.8%
+2026-05-10 08:01:05,436  INFO      DDOS-UDP_FRAGMENTATION                      2,000     97.7%
+2026-05-10 08:01:05,436  INFO      DICTIONARYBRUTEFORCE                        2,000     32.6%
+2026-05-10 08:01:05,436  INFO      DNS_SPOOFING                                2,000     48.8%
+2026-05-10 08:01:05,436  INFO      DOS-HTTP_FLOOD                              2,000     48.8%
+2026-05-10 08:01:05,436  INFO      DOS-SYN_FLOOD                               2,000     48.8%
+2026-05-10 08:01:05,436  INFO      DOS-TCP_FLOOD                               2,000     48.8%
+2026-05-10 08:01:05,437  INFO      DOS-UDP_FLOOD                               2,000     48.8%
+2026-05-10 08:01:05,437  INFO      MIRAI-GREETH_FLOOD                          2,000     48.8%
+2026-05-10 08:01:05,437  INFO      MIRAI-GREIP_FLOOD                           2,000     32.6%
+2026-05-10 08:01:05,437  INFO      MIRAI-UDPPLAIN                              2,000     97.7%
+2026-05-10 08:01:05,437  INFO      MITM-ARPSPOOFING                            2,000     19.5%
+2026-05-10 08:01:05,437  INFO      RECON-HOSTDISCOVERY                         2,000     16.3%
+2026-05-10 08:01:05,437  INFO      RECON-OSSCAN                                2,000     24.4%
+2026-05-10 08:01:05,437  INFO      RECON-PINGSWEEP                               429      2.1%
+2026-05-10 08:01:05,437  INFO      RECON-PORTSCAN                                815      4.0%
+2026-05-10 08:01:05,437  INFO      SQLINJECTION                                2,000     19.5%
+2026-05-10 08:01:05,437  INFO      UPLOADING_ATTACK                                4      0.0%
+2026-05-10 08:01:05,437  INFO      VULNERABILITYSCAN                           2,000     24.4%
+2026-05-10 08:01:05,437  INFO      XSS                                         1,109      5.4%
+2026-05-10 08:01:05,437  INFO      ============================================================
+2026-05-10 08:01:06,050  INFO      Saved /home/namit/codes/iot-cyber-security/outputs/vae_acceptance_rates.png
+2026-05-10 08:01:11,171  INFO      Saved /home/namit/codes/iot-cyber-security/outputs/vae_feature_distributions.png
+2026-05-10 08:01:11,173  INFO      Running t-SNE on 3600 points …
+2026-05-10 08:01:21,526  INFO      Saved /home/namit/codes/iot-cyber-security/outputs/vae_tsne.png
+2026-05-10 08:01:21,526  INFO      
+All outputs written to: /home/namit/codes/iot-cyber-security/outputs
+2026-05-10 08:01:21,526  INFO      Generated CSVs in     : /home/namit/codes/iot-cyber-security/outputs/generated
+2026-05-10 08:01:21,527  INFO      Done.
