@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import RobustScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.manifold import TSNE
 from tqdm import tqdm
 
 import torch
@@ -430,6 +431,46 @@ def plot_error_distribution(errors: np.ndarray, labels: np.ndarray,
     log.info(f"Saved {out_path}")
 
 
+@torch.no_grad()
+def collect_latents(model, loader) -> tuple[np.ndarray, np.ndarray]:
+    """Return (latent vectors, integer labels) from a labelled loader."""
+    model.eval()
+    zs, ys = [], []
+    for X, y in loader:
+        X = X.to(DEVICE, non_blocking=True)
+        zs.append(model.encode(X).cpu().numpy())
+        ys.append(y.numpy())
+    return np.concatenate(zs), np.concatenate(ys)
+
+
+def plot_latent_tsne(latents: np.ndarray, labels: np.ndarray,
+                     classes: np.ndarray, out_dir: Path):
+    N   = min(6000, len(latents))
+    rng = np.random.default_rng(SEED)
+    idx = rng.choice(len(latents), N, replace=False)
+    log.info(f"Running t-SNE on {N} latent vectors …")
+    emb = TSNE(n_components=2, random_state=SEED, perplexity=40,
+               n_iter=500, init="pca").fit_transform(latents[idx])
+
+    fig, ax = plt.subplots(figsize=(13, 9))
+    cmap = plt.get_cmap("tab20", len(classes))
+    for i, cls in enumerate(classes):
+        mask = labels[idx] == i
+        if mask.sum() == 0:
+            continue
+        ax.scatter(emb[mask, 0], emb[mask, 1], s=7, alpha=0.5,
+                   color=cmap(i), label=cls, linewidths=0)
+    ax.set_title("Autoencoder — t-SNE of Latent Space (val set)",
+                 fontsize=13, fontweight="bold")
+    ax.legend(markerscale=3, fontsize=7, ncol=2, loc="best",
+              framealpha=0.7, edgecolor="none")
+    ax.set_xticks([]); ax.set_yticks([])
+    plt.tight_layout()
+    plt.savefig(out_dir / "ae_latent_tsne.png", dpi=150)
+    plt.close()
+    log.info("Saved outputs/ae_latent_tsne.png")
+
+
 def plot_per_class_errors(errors: np.ndarray, labels: np.ndarray,
                            classes: np.ndarray, threshold: float, out_dir: Path):
     """Box-plot of reconstruction error per class with threshold overlay."""
@@ -590,6 +631,10 @@ def main():
     plot_error_distribution(val_errors, val_labels, classes, threshold, OUTPUT_DIR, tag="val")
     plot_error_distribution(te_errors,  te_labels,  classes, threshold, OUTPUT_DIR, tag="test")
     plot_per_class_errors(val_errors, val_labels, classes, threshold, OUTPUT_DIR)
+
+    log.info("Generating latent space visualisation …")
+    latents, lat_labels = collect_latents(model, val_loader)
+    plot_latent_tsne(latents, lat_labels, classes, OUTPUT_DIR)
 
     log.info(f"\nAll outputs written to: {OUTPUT_DIR.resolve()}")
     log.info("Done.")

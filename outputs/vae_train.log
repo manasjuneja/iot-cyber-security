@@ -4,3 +4,44 @@
 2026-05-10 07:27:19,726  INFO      PyTorch : 2.11.0+cu130
 2026-05-10 07:27:19,726  INFO      ======================================================================
 2026-05-10 07:27:19,727  INFO      Found 63 CSV files
+2026-05-10 07:31:12,278  INFO      Attack classes found: 34
+2026-05-10 07:31:12,282  INFO        BACKDOOR_MALWARE                                3,078
+2026-05-10 07:31:12,289  INFO        BENIGN                                         50,000
+2026-05-10 07:31:12,292  INFO        BROWSERHIJACKING                                5,630
+2026-05-10 07:31:12,294  INFO        COMMANDINJECTION                                5,168
+2026-05-10 07:31:12,300  INFO        DDOS-ACK_FRAGMENTATION                         50,000
+2026-05-10 07:31:12,305  INFO        DDOS-HTTP_FLOOD                                27,597
+2026-05-10 07:31:12,313  INFO        DDOS-ICMP_FLOOD                                50,000
+2026-05-10 07:31:12,318  INFO        DDOS-ICMP_FRAGMENTATION                        50,000
+2026-05-10 07:31:12,325  INFO        DDOS-PSHACK_FLOOD                              50,000
+2026-05-10 07:31:12,329  INFO        DDOS-RSTFINFLOOD                               50,000
+2026-05-10 07:31:12,333  INFO        DDOS-SLOWLORIS                                 22,400
+2026-05-10 07:31:12,342  INFO        DDOS-SYNONYMOUSIP_FLOOD                        50,000
+2026-05-10 07:31:12,349  INFO        DDOS-SYN_FLOOD                                 50,000
+2026-05-10 07:31:12,422  INFO        DDOS-TCP_FLOOD                                 50,000
+2026-05-10 07:31:12,617  INFO        DDOS-UDP_FLOOD                                 50,000
+2026-05-10 07:31:12,622  INFO        DDOS-UDP_FRAGMENTATION                         50,000
+2026-05-10 07:31:12,624  INFO        DICTIONARYBRUTEFORCE                           12,522
+2026-05-10 07:31:12,630  INFO        DNS_SPOOFING                                   50,000
+2026-05-10 07:31:12,639  INFO        DOS-HTTP_FLOOD                                 50,000
+2026-05-10 07:31:12,650  INFO        DOS-SYN_FLOOD                                  50,000
+2026-05-10 07:31:12,669  INFO        DOS-TCP_FLOOD                                  50,000
+2026-05-10 07:31:12,683  INFO        DOS-UDP_FLOOD                                  50,000
+2026-05-10 07:31:12,696  INFO        MIRAI-GREETH_FLOOD                             50,000
+2026-05-10 07:31:12,716  INFO        MIRAI-GREIP_FLOOD                              50,000
+2026-05-10 07:31:12,728  INFO        MIRAI-UDPPLAIN                                 50,000
+2026-05-10 07:31:12,743  INFO        MITM-ARPSPOOFING                               50,000
+2026-05-10 07:31:12,756  INFO        RECON-HOSTDISCOVERY                            50,000
+2026-05-10 07:31:12,779  INFO        RECON-OSSCAN                                   50,000
+2026-05-10 07:31:12,782  INFO        RECON-PINGSWEEP                                 2,161
+2026-05-10 07:31:12,795  INFO        RECON-PORTSCAN                                 50,000
+2026-05-10 07:31:12,799  INFO        SQLINJECTION                                    5,022
+2026-05-10 07:31:12,802  INFO        UPLOADING_ATTACK                                1,196
+2026-05-10 07:31:12,816  INFO        VULNERABILITYSCAN                              50,000
+2026-05-10 07:31:12,819  INFO        XSS                                             3,705
+2026-05-10 07:31:13,681  INFO      Total attack rows: 1,288,479
+2026-05-10 07:31:20,624  INFO      Features: 39  |  Attack classes: 34
+2026-05-10 07:31:20,624  INFO      Train: 1,095,207  Val: 193,272
+2026-05-10 07:31:20,678  INFO      CVAE params: 1,164,199
+2026-05-10 07:33:35,162  INFO      Epoch   1/80  β=0.040  tr_loss=20.06705 (recon=19.27285 kl=19.8550)  vl_loss=0.65036  132.9s  ✓ best
+2026-05-10 07:35:50,282  INFO      Epoch   2/80  β=0.080  tr_loss=0.86124 (recon=0.64735 kl=2.6737)  vl_loss=0.26900  135.1s  ✓ best

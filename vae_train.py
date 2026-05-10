@@ -29,6 +29,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import RobustScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.manifold import TSNE
 from tqdm import tqdm
 
 import torch
@@ -371,6 +372,101 @@ def plot_curves(history: dict, out_dir: Path):
     log.info("Saved outputs/vae_training_curves.png")
 
 
+@torch.no_grad()
+def collect_val_stats(model, loader):
+    """Return (mu vectors, per-sample recon MSE, integer labels) for a val loader."""
+    model.eval()
+    mus, errors, ys = [], [], []
+    for X, y in loader:
+        X, y = X.to(DEVICE), y.to(DEVICE)
+        mu, _         = model.encoder(X, y)
+        x_hat, _, _   = model(X, y)
+        err = F.mse_loss(x_hat, X, reduction="none").mean(dim=1)
+        mus.append(mu.cpu().numpy())
+        errors.append(err.cpu().numpy())
+        ys.append(y.cpu().numpy())
+    return np.concatenate(mus), np.concatenate(errors), np.concatenate(ys)
+
+
+def plot_latent_tsne(mus, labels, classes, out_dir):
+    N   = min(6000, len(mus))
+    rng = np.random.default_rng(SEED)
+    idx = rng.choice(len(mus), N, replace=False)
+    log.info(f"Running t-SNE on {N} latent vectors …")
+    emb = TSNE(n_components=2, random_state=SEED, perplexity=40,
+               n_iter=500, init="pca").fit_transform(mus[idx])
+
+    fig, ax = plt.subplots(figsize=(13, 9))
+    cmap = plt.get_cmap("tab20", len(classes))
+    for i, cls in enumerate(classes):
+        mask = labels[idx] == i
+        if mask.sum() == 0:
+            continue
+        ax.scatter(emb[mask, 0], emb[mask, 1], s=7, alpha=0.5,
+                   color=cmap(i), label=cls, linewidths=0)
+    ax.set_title("CVAE — t-SNE of Latent Space (val set, mu vectors)",
+                 fontsize=13, fontweight="bold")
+    ax.legend(markerscale=3, fontsize=7, ncol=2, loc="best",
+              framealpha=0.7, edgecolor="none")
+    ax.set_xticks([]); ax.set_yticks([])
+    plt.tight_layout()
+    plt.savefig(out_dir / "vae_latent_tsne.png", dpi=150)
+    plt.close()
+    log.info("Saved outputs/vae_latent_tsne.png")
+
+
+def plot_per_class_recon(errors, labels, classes, out_dir):
+    order = sorted(range(len(classes)),
+                   key=lambda i: np.median(errors[labels == i]))
+    data  = [errors[labels == i] for i in order]
+    names = [classes[i] for i in order]
+
+    fig, ax = plt.subplots(figsize=(14, max(8, len(classes) * 0.45)))
+    ax.boxplot(
+        data, vert=False, labels=names,
+        flierprops=dict(marker=".", markersize=2, alpha=0.3),
+        patch_artist=True,
+        boxprops=dict(facecolor="mediumseagreen", alpha=0.6),
+    )
+    ax.set_xlabel("Reconstruction MSE", fontsize=11)
+    ax.set_title("CVAE — Per-Class Reconstruction Error (val set)",
+                 fontsize=13, fontweight="bold")
+    ax.grid(axis="x", alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(out_dir / "vae_per_class_recon.png", dpi=150)
+    plt.close()
+    log.info("Saved outputs/vae_per_class_recon.png")
+
+
+def plot_generated_vs_real(model, X_val, y_val, classes, out_dir):
+    """Overlay real vs CVAE-generated histograms for the 6 highest-variance features."""
+    top6 = np.argsort(X_val.var(axis=0))[-6:][::-1]
+    feat_names = [FEATURE_COLS[i] for i in top6]
+
+    y_t = torch.from_numpy(y_val).to(DEVICE)
+    with torch.no_grad():
+        model.eval()
+        z     = torch.randn(len(y_val), model.latent_dim, device=DEVICE)
+        X_gen = model.decoder(z, y_t).cpu().numpy()
+
+    fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+    for ax, fi, fname in zip(axes.flatten(), top6, feat_names):
+        ax.hist(X_val[:, fi],  bins=60, density=True, alpha=0.6,
+                color="steelblue", label="Real")
+        ax.hist(X_gen[:, fi],  bins=60, density=True, alpha=0.6,
+                color="tomato",    label="Generated")
+        ax.set_title(fname, fontsize=10)
+        ax.legend(fontsize=8)
+        ax.grid(True, alpha=0.3)
+
+    plt.suptitle("CVAE — Generated vs Real Feature Distributions (top-6 by variance)",
+                 fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    plt.savefig(out_dir / "vae_generated_vs_real.png", dpi=150)
+    plt.close()
+    log.info("Saved outputs/vae_generated_vs_real.png")
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  MAIN
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -464,7 +560,6 @@ def main():
     # ── 5. Save checkpoint ────────────────────────────────────────────────────
     if best_state:
         model.load_state_dict(best_state)
-        del best_state
 
     ckpt_path = OUTPUT_DIR / "best_vae.pt"
     torch.save(
@@ -488,6 +583,15 @@ def main():
     log.info(f"CVAE checkpoint saved → {ckpt_path}")
 
     plot_curves(history, OUTPUT_DIR)
+
+    # ── 7. Post-training visualisations ──────────────────────────────────────
+    log.info("Generating post-training plots …")
+    mus, val_errors, val_labels = collect_val_stats(model, val_loader)
+    plot_latent_tsne(mus, val_labels, classes, OUTPUT_DIR)
+    plot_per_class_recon(val_errors, val_labels, classes, OUTPUT_DIR)
+    plot_generated_vs_real(model, X_val, y_val, classes, OUTPUT_DIR)
+
+    log.info(f"All outputs written to: {OUTPUT_DIR.resolve()}")
     log.info("Done.")
 
 
