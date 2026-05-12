@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IoT Intrusion Detection — Research Demo</title>
+  <title>Intelligent IoT Cyberattack Detection — Research Demo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -17,26 +17,26 @@
       --surface:      #13110C;
       --surface-hi:   #1A170F;
       --surface-hi2:  #211E16;
-      --border:       #252218;
-      --border-hi:    #302C20;
-      --amber:        #C4832A;
-      --amber-hi:     #D9973C;
-      --amber-lo:     #7A5018;
-      --amber-dim:    rgba(196,131,42,0.08);
-      --amber-glow:   rgba(196,131,42,0.18);
-      --text:         #DDD4BC;
-      --text-dim:     #A89E88;
-      --muted:        #5A5440;
-      --muted-hi:     #7A7060;
-      --green:        #4D9970;
-      --green-dim:    rgba(77,153,112,0.12);
-      --green-border: rgba(77,153,112,0.30);
-      --red:          #B84A4A;
-      --red-dim:      rgba(184,74,74,0.12);
-      --red-border:   rgba(184,74,74,0.30);
-      --yellow:       #B88830;
-      --yellow-dim:   rgba(184,136,48,0.12);
-      --yellow-border:rgba(184,136,48,0.30);
+      --border:       #302C20;
+      --border-hi:    #4A4535;
+      --amber:        #D9973C;
+      --amber-hi:     #EDB055;
+      --amber-lo:     #8A6025;
+      --amber-dim:    rgba(217,151,60,0.10);
+      --amber-glow:   rgba(217,151,60,0.22);
+      --text:         #F4ECD8;
+      --text-dim:     #D0C4A8;
+      --muted:        #9A9080;
+      --muted-hi:     #B8AC98;
+      --green:        #5DB882;
+      --green-dim:    rgba(93,184,130,0.14);
+      --green-border: rgba(93,184,130,0.40);
+      --red:          #D05858;
+      --red-dim:      rgba(208,88,88,0.14);
+      --red-border:   rgba(208,88,88,0.40);
+      --yellow:       #CC9A38;
+      --yellow-dim:   rgba(204,154,56,0.14);
+      --yellow-border:rgba(204,154,56,0.40);
     }
 
     html { scroll-behavior: smooth; }
@@ -192,7 +192,7 @@
       font-size: 5.5rem;
       font-weight: 300;
       line-height: 1;
-      color: var(--border-hi);
+      color: #5A5445;
       letter-spacing: -0.04em;
       user-select: none;
     }
@@ -314,7 +314,7 @@
       display: block;
       font-family: 'JetBrains Mono', monospace;
       font-size: 9px;
-      color: var(--muted);
+      color: var(--muted-hi);
       letter-spacing: 0.04em;
       margin-bottom: 2px;
       white-space: nowrap;
@@ -326,8 +326,8 @@
       width: 100%;
       background: transparent;
       border: none;
-      border-bottom: 1px solid transparent;
-      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
       font-weight: 400;
@@ -398,11 +398,11 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
       letter-spacing: 0.12em;
-      color: var(--border-hi);
-      border: 1px solid var(--border);
+      color: var(--muted-hi);
+      border: 1px solid var(--border-hi);
       padding: 3px 10px;
     }
-    .placeholder-text { font-size: 12px; color: var(--muted); }
+    .placeholder-text { font-size: 12px; color: var(--muted-hi); }
 
     .result-inner { display: flex; flex-direction: column; gap: 1rem; animation: fadeIn 0.3s ease; }
     .result-hidden { display: none; }
@@ -478,8 +478,8 @@
     }
     .val-green  { color: var(--green); }
     .val-red    { color: var(--red); }
-    .val-amber  { color: var(--amber); }
-    .val-muted  { color: var(--muted-hi); font-size: 11px; }
+    .val-amber  { color: var(--amber-hi); }
+    .val-muted  { color: var(--text-dim); font-size: 11px; }
 
     /* ─── Chart ───────────────────────────────────────────────────────── */
     .chart-frame {
@@ -579,9 +579,9 @@
       justify-content: space-between;
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
-      color: var(--muted-hi);
+      color: var(--text-dim);
     }
-    .vsi-row span:last-child { color: var(--text-dim); }
+    .vsi-row span:last-child { color: var(--text); }
 
     /* ─── Footer ─────────────────────────────────────────────────────── */
     .footer {
@@ -595,13 +595,13 @@
     .footer-left {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
-      color: var(--muted);
+      color: var(--muted-hi);
       letter-spacing: 0.08em;
     }
     .footer-right {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
-      color: var(--muted);
+      color: var(--muted-hi);
     }
 
     /* ─── Scrollbar ───────────────────────────────────────────────────── */
@@ -627,7 +627,7 @@
   <div class="hero-inner">
     <div class="dataset-badge">CICIoT2023 · 39 Features · 34 Attack Classes</div>
 
-    <h1>IoT <em>Intrusion</em><br>Detection Suite</h1>
+    <h1>Intelligent IoT <em>Cyberattack</em><br>Detection using Machine Learning<br>and Generative AI Techniques</h1>
 
     <p class="hero-desc">
       Three deep-learning models for classifying network flows,
@@ -722,7 +722,6 @@
         <div class="section-meta-row">
           <span class="section-tag">Two-stage pipeline</span>
           <span class="section-tag">MSE reconstruction</span>
-          <span class="section-tag">Calibrated threshold</span>
         </div>
       </div>
     </div>

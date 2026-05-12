@@ -242,13 +242,13 @@ def features_from_request(data: dict) -> np.ndarray:
 # ─── Chart palette (warm dark / amber) ───────────────────────────────────────
 C_BG      = "#0A0905"
 C_SURFACE = "#17150E"
-C_BORDER  = "#252218"
-C_TEXT    = "#DDD4BC"
-C_MUTED   = "#5A5440"
-C_AMBER   = "#C4832A"
-C_AMBER2  = "#8B6020"
-C_GREEN   = "#4D9970"
-C_RED     = "#B84A4A"
+C_BORDER  = "#302C20"
+C_TEXT    = "#F4ECD8"
+C_MUTED   = "#9A9080"
+C_AMBER   = "#D9973C"
+C_AMBER2  = "#8A6025"
+C_GREEN   = "#5DB882"
+C_RED     = "#D05858"
 
 def _apply_dark_style(fig, *axes):
     fig.patch.set_facecolor(C_BG)
