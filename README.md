@@ -11,6 +11,39 @@ outputs/             ← all model checkpoints and plots are written here
 
 ---
 
+## Interactive Demo (`app.py`)
+
+A Flask web app that loads all three trained models and serves an interactive demo at `http://localhost:5050`.
+
+**Prerequisites:** train all three models first so the checkpoints exist:
+```
+outputs/best_model.pt   ← from train.py
+outputs/ae_model.pt     ← from ae_train.py
+outputs/best_vae.pt     ← from vae_train.py
+```
+
+**Install Flask** (if not already installed):
+```bash
+pip install flask
+```
+
+**Run the app:**
+```bash
+python3 app.py
+```
+
+Then open **http://localhost:5050** in a browser. The app exposes three sections:
+
+| Section | Endpoint | What it does |
+|---------|----------|-------------|
+| MLP Classifier | `POST /api/classify` | Classifies a 39-feature flow into one of 34 attack classes |
+| AE Anomaly Detector | `POST /api/detect` | Runs the two-stage AE→MLP pipeline; flags unknown attacks |
+| CVAE Synthesiser | `POST /api/generate` | Generates synthetic traffic samples for a chosen attack class |
+
+Each section has pre-filled example inputs (Benign, DDoS, DoS UDP, Mirai) so you can run inference immediately without entering feature values manually.
+
+---
+
 ## Model 1 — Deep Residual MLP Classifier (`train.py`)
 
 ### What it does
